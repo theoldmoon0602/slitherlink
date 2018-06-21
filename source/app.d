@@ -238,6 +238,56 @@ long[] shift(long[] a, long[] b) {
   return a.zip(b).map!"a[0] + a[1]".array;
 }
 
+void try_surround(ref int[][][] grid, const(int[][]) vs, long[] p)
+{
+  switch (vs[p[0]][p[1]]) {
+    case 1:
+      grid.try_surround1(p);
+      break;
+    case 2:
+      grid.try_surround2(p);
+      break;
+    case 3:
+      grid.try_surround3(p);
+      break;
+  }
+}
+
+void try_surround1(ref int[][][] grid, long[] p)
+{
+  int[] cnt = [0, 0, 0];
+  foreach (dp; scan) {
+    cnt[grid.get(p, dp)]++;
+  }
+
+  if (cnt[EDGE] == 1 && cnt[FORBID] != 3) {
+    foreach (dp; scan) {
+      if (grid.get(p, dp) != EDGE) {
+        grid.set(p, dp, FORBID);
+      }
+    }
+  }
+}
+
+void try_surround2(ref int[][][] grid, long[] p)
+{
+  int[] cnt = [0, 0, 0];
+  foreach (dp; scan) {
+    cnt[grid.get(p, dp)]++;
+  }
+
+  if (cnt[EDGE] != 2 && cnt[FORBID] == 2) {
+    foreach (dp; scan) {
+      if (grid.get(p, dp) == FORBID) {
+        grid.set(p, dp, FORBID);
+      }
+      else {
+        grid.set(p, dp, EDGE);
+      }
+    }
+  }
+}
+
 void try_surround3(ref int[][][] grid, long[] p)
 {
   int[] cnt = [0, 0, 0];
@@ -357,6 +407,16 @@ void solve(const(int[][]) vs, ref int[][][] grid)
       grid.set(p, [1, 0], EDGE);
       grid.set(p, [0, 1], EDGE);
       try_surround3(grid, p);
+    }
+  }
+
+
+  // surround remaineds
+  foreach (y; 0..vs.length) {
+    foreach (x; 0..vs[y].length) {
+      if (vs[y][x] != 4) {
+        grid.try_surround(vs, p);
+      }
     }
   }
 }
