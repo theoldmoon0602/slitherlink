@@ -277,6 +277,13 @@ void try_surround1(ref int[][][] grid, long[] p)
       }
     }
   }
+  if (cnt[FORBID] == 3) {
+    foreach (dp; scan) {
+      if (grid.get(p, dp) != FORBID) {
+        grid.set(p, dp, EDGE);
+      }
+    }
+  }
 }
 
 void try_surround2(ref int[][][] grid, long[] p)
@@ -446,7 +453,7 @@ void main()
   }
 
   writeln();
-  solve(vs, grid, 5);
+  solve(vs, grid, 100);
   print(vs, grid);
 }
 
