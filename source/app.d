@@ -267,7 +267,11 @@ void try_surround1(ref int[][][] grid, long[] p)
 {
   int[] cnt = [0, 0, 0, 0];
   foreach (dp; scan) {
-    cnt[grid.get(p, dp)]++;
+    auto x = grid.get(p, dp);
+    if (x == EDGE) {
+      grid.set(p, dp, EDGE);
+    }
+    cnt[x]++;
   }
 
   if (cnt[EDGE] == 1 && cnt[FORBID] != 3) {
@@ -290,7 +294,11 @@ void try_surround2(ref int[][][] grid, long[] p)
 {
   int[] cnt = [0, 0, 0, 0];
   foreach (dp; scan) {
-    cnt[grid.get(p, dp)]++;
+    auto x = grid.get(p, dp);
+    if (x == EDGE) {
+      grid.set(p, dp, EDGE);
+    }
+    cnt[x]++;
   }
 
   if (cnt[EDGE] == 2 || cnt[FORBID] == 2) {
@@ -309,7 +317,11 @@ void try_surround3(ref int[][][] grid, long[] p)
 {
   int[] cnt = [0, 0, 0, 0];
   foreach (dp; scan) {
-    cnt[grid.get(p, dp)]++;
+    auto x = grid.get(p, dp);
+    if (x == EDGE) {
+      grid.set(p, dp, EDGE);
+    }
+    cnt[x]++;
   }
 
   if (cnt[FORBID] == 1) {
