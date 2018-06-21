@@ -40,10 +40,21 @@ string numconv(int v)
 
 
 
-bool inrange(T)(T[] c, long y, long x)
+bool inrange(const(int[][]) vs, long y, long x)
 {
-  auto size = c.length;
+  auto size = vs.length;
   return 0 <= x && x < size && 0 <= y && y < size;
+}
+bool inrange(const(int[][][]) grid, long[] p)
+{
+  if (grid.length <= p[0]) {
+    return false;
+  }
+  auto size = grid[p[0]].length;
+  if (p[0] == TATE) {
+    return 0 <= p[1] && p[1] < size-1 && 0 <= p[2] && p[2] < size;
+  }
+  return 0 <= p[1] && p[1] < size && 0 <= p[2] && p[2] < size-1;
 }
 
 long distance4(long[] p1, long[] p2)
@@ -83,7 +94,7 @@ long get(const(int[][][]) grid, long[] p, long[] dp)
 
 long get(const(int[][][]) grid, long[] p)
 {
-  if (grid[p[0]].inrange(p[1], p[2])) {
+  if (grid.inrange(p)) {
     return grid[p[0]][p[1]][p[2]];
   }
   return INVALID;
@@ -112,15 +123,12 @@ void set(ref int[][][] grid, long[] p, int v)
 
 void set(ref int[][][] grid, long d, long y, long x, int v)
 {
-  if (!grid[d].inrange(y, x)) {
+  if (!grid.inrange([d, y, x])) {
     return;
   }
   if (grid[d][y][x] != EMPTY && grid[d][y][x] != v) {
     auto msg = "at: (%d %d %d) is %s but assigning %s".format(d, x, y, gridconv(grid[d][y][x], d == YOKO),  gridconv(v, d == YOKO));
     throw new Exception("Program error: " ~ msg);
-  }
-  if (grid[d][y][x] == v) {
-    return;
   }
 
   grid[d][y][x] = v;
@@ -144,6 +152,7 @@ void set(ref int[][][] grid, long d, long y, long x, int v)
         cnt[grid.get(e)]++;
       }
 
+
       if (cnt[EDGE] == 0 && cnt[EMPTY] == 1) {
         foreach (e; scanedge(d, y, x, i)) {
           if (grid.get(e) == EMPTY) {
@@ -154,7 +163,6 @@ void set(ref int[][][] grid, long d, long y, long x, int v)
       }
     }
   }
-
 }
 
 void print(const(int[][][]) grid)
@@ -250,12 +258,14 @@ void try_surround(ref int[][][] grid, const(int[][]) vs, long[] p)
     case 3:
       grid.try_surround3(p);
       break;
+    default:
+      break;
   }
 }
 
 void try_surround1(ref int[][][] grid, long[] p)
 {
-  int[] cnt = [0, 0, 0];
+  int[] cnt = [0, 0, 0, 0];
   foreach (dp; scan) {
     cnt[grid.get(p, dp)]++;
   }
@@ -271,12 +281,12 @@ void try_surround1(ref int[][][] grid, long[] p)
 
 void try_surround2(ref int[][][] grid, long[] p)
 {
-  int[] cnt = [0, 0, 0];
+  int[] cnt = [0, 0, 0, 0];
   foreach (dp; scan) {
     cnt[grid.get(p, dp)]++;
   }
 
-  if (cnt[EDGE] != 2 && cnt[FORBID] == 2) {
+  if (cnt[EDGE] == 2 || cnt[FORBID] == 2) {
     foreach (dp; scan) {
       if (grid.get(p, dp) == FORBID) {
         grid.set(p, dp, FORBID);
@@ -290,7 +300,7 @@ void try_surround2(ref int[][][] grid, long[] p)
 
 void try_surround3(ref int[][][] grid, long[] p)
 {
-  int[] cnt = [0, 0, 0];
+  int[] cnt = [0, 0, 0, 0];
   foreach (dp; scan) {
     cnt[grid.get(p, dp)]++;
   }
@@ -314,7 +324,7 @@ void try_surround3(ref int[][][] grid, long[] p)
 }
 
 
-void solve(const(int[][]) vs, ref int[][][] grid)
+void solve(const(int[][]) vs, ref int[][][] grid, uint dotimes=10)
 {
   long[][] zeros = [];
   long[][] threes = [];
@@ -412,10 +422,10 @@ void solve(const(int[][]) vs, ref int[][][] grid)
 
 
   // surround remaineds
-  foreach (y; 0..vs.length) {
-    foreach (x; 0..vs[y].length) {
-      if (vs[y][x] != 4) {
-        grid.try_surround(vs, p);
+  foreach (_; 0..dotimes) {
+    foreach (y; 0..vs.length) {
+      foreach (x; 0..vs[y].length) {
+        grid.try_surround(vs, [y, x]);
       }
     }
   }
@@ -436,8 +446,7 @@ void main()
   }
 
   writeln();
-  solve(vs, grid);
+  solve(vs, grid, 5);
   print(vs, grid);
-
 }
 
