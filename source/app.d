@@ -4,6 +4,7 @@ import std.algorithm;
 import std.conv;
 import std.range;
 import std.math;
+import std.typecons;
 
 enum YOKO = 0;
 enum TATE = 1;
@@ -34,15 +35,7 @@ string numconv(int v)
   return v.to!string;
 }
 
-void print(int[][] vs, int[][][] grid)
-{
-  // grid line
-  foreach (y; 0..vs.length) {
-    writeln(grid[YOKO][y][0..$-1].map!(x => "+"~gridconv(x, true)).join("") ~ "+");
-    grid[TATE][y].map!(x => gridconv(x, false)).zip(vs[y].map!(numconv)).map!"a[0]~a[1]".array.join("").writeln;
-  }
-  writeln(grid[YOKO][$-1][0..$-1].map!(x => "+"~gridconv(x, true)).join("") ~ "+");
-}
+
 
 bool inrange(ulong size, long y, long x)
 {
@@ -54,97 +47,84 @@ int distance(int y1, int x1,int y2, int x2)
   return abs(x1-x2) + abs(y1-y2);
 }
 
-void set(ref int[][][] grid, long d, long y, long x, int v)
+long get(const(int[][]) vs, long[] p)
 {
+  return vs[p[0]][p[1]];
+}
+
+long get(const(int[][][]) grid, long[] p, long[] dd)
+{
+  long y = p[0]; long x = p[1];
+  long dy = dp[0]; long dx = dp[1];
+
+  auto d = (dy == 0)?TATE:YOKO;
+  if (d == TATE && dx == -1) { dx = 0; }
+  if (d == YOKO && dy == -1) { dy = 0; }
+
+  y += dy;
+  x += dx;
+
+  if (inrange(grid[0].length, y, x)) {
+    return grid[d][y][x];
+  }
+  return -1;
+}
+
+void set(ref int[][][] grid, long[] p, long[] dp, int v)
+{
+  long y = p[0]; long x = p[1];
+  long dy = dp[0]; long dx = dp[1];
+
+  auto d = (dy == 0)?TATE:YOKO;
+  if (d == TATE && dx == -1) { dx = 0; }
+  if (d == YOKO && dy == -1) { dy = 0; }
+
+  y += dy;
+  x += dx;
+
   if (inrange(grid[0].length, y, x)) {
     grid[d][y][x] = v;
   }
 }
 
-void solveit(ref int[][] vs, ref int[][][] grid)
+void print(int[][] vs, int[][][] grid)
 {
-  int[] zx = [];
-  int[] zy = [];
-
-  int[] tx = [];
-  int[] ty = [];
-
-  // mark zero
+  // grid line
   foreach (y; 0..vs.length) {
-    foreach (x; 0..vs[0].length) {
-      if (vs[y][x] == 3) {
-        tx ~= cast(int)x;
-        ty ~= cast(int)y;
-      }
-      else if (vs[y][x] == 0) {
-        zx ~= cast(int)x;
-        zy ~= cast(int)y;
-
-        grid.set(TATE, y, x, FORBID);
-        grid.set(TATE, y, x+1, FORBID);
-        grid.set(YOKO, y, x, FORBID);
-        grid.set(YOKO, y+1, x, FORBID);
-      }
-    }
+    writeln(grid[YOKO][y][0..$-1].map!(x => "+"~gridconv(x, true)).join("") ~ "+");
+    grid[TATE][y].map!(x => gridconv(x, false)).zip(vs[y].map!(numconv)).map!"a[0]~a[1]".array.join("").writeln;
   }
-
-  auto dy = [-1, 0, 0, 1];
-  auto dx = [0, -1, 1, 0];
-
-  auto c = (int x) {
-    if (x == -1) {
-      return 0;
-    }
-    return x;
-  };
-
-  // line 3 around zero 
-  foreach (i; 0..zx.length) {
-    foreach (j; 0..dx.length) {
-      auto x = zx[i] + dx[j];
-      auto y = zy[i] + dy[j];
-      if (!inrange(vs.length, y, x)) { continue; }
-      if (vs[y][x] == 3) {
-        // 3を囲う
-        grid.set(abs(dx[j]), y + c(dy[j]), x + c(dx[j]), LINE);
-        grid.set(1-abs(dx[j]), y, x, LINE);
-        grid.set(1-abs(dx[j]), y + abs(dx[j]), x + abs(dy[j]), LINE);
-
-        // 周りに x を
-        grid.set(abs(dx[j]), y + c(dy[j]) + dx[j], x + c(dx[j]) + dy[j], FORBID);
-        grid.set(abs(dx[j]), y + c(dy[j]) - dx[j], x + c(dx[j]) - dy[j], FORBID);
-
-        grid.set(1-abs(dx[j]), y + dy[j], x + dx[j], FORBID);
-        grid.set(1-abs(dx[j]), y + abs(dx[j]) + dy[j], x + abs(dy[j]) + dx[j], FORBID);
-      }
-    }
-  }
-
-  // 隣接する 3
-  foreach (i; 0..tx.length) {
-    foreach (j; 0..tx.length) {
-      if (i == j) { continue; }
-      if (distance(ty[i], tx[i], ty[j], tx[j]) == 1) {
-        // 横隣接
-        if (ty[i] == ty[j]) {
-          grid.set(TATE, ty[i], tx[i], LINE);
-          grid.set(TATE, ty[i], tx[i]+1, LINE);
-          grid.set(TATE, ty[j], tx[j], LINE);
-          grid.set(TATE, ty[j], tx[j]+1, LINE);
-        }
-
-        // 縦隣接
-        else if (tx[i] == tx[j]) {
-          grid.set(YOKO, ty[i], tx[i], LINE);
-          grid.set(YOKO, ty[i] + 1, tx[i], LINE);
-          grid.set(YOKO, ty[j], tx[j], LINE);
-          grid.set(YOKO, ty[j] + 1, tx[j], LINE);
-        }
-      }
-    }
-  }
+  writeln(grid[YOKO][$-1][0..$-1].map!(x => "+"~gridconv(x, true)).join("") ~ "+");
 }
 
+long[][] scan() {
+  return [
+    [-1, 0],
+    [0, -0],
+    [0, 1],
+    [1, 0],
+  ];
+}
+
+void solve(const(int[][]) vs, ref int[][][] grid)
+{
+  // mark zero
+  long[][] zeros = [];
+  foreach (y; 0..vs.length) {
+    foreach (x; 0..vs[y].length) {
+      if (get([y, x]) == 0) {
+        zeros ~= [y, x];
+
+        // HERE
+        foreach (dp; scan) {
+        }
+
+      }
+    }
+  }
+
+
+}
 
 void main()
 {
@@ -161,15 +141,8 @@ void main()
   }
 
   writeln();
-  solveit(vs, grid);
+  solve(vs, grid);
   print(vs, grid);
-
-  foreach (gri; grid) {
-    foreach (g; gri) {
-      writeln(g);
-    }
-    writeln();
-  }
 
 }
 
