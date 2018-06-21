@@ -120,29 +120,29 @@ void solveit(ref int[][] vs, ref int[][][] grid)
     }
   }
 
-  // // 隣接する 3
-  // foreach (i; 0..tx.length) {
-  //   foreach (j; 0..tx.length) {
-  //     if (i == j) { continue; }
-  //     if (distance(tx[i], ty[i], tx[j], ty[j]) == 1) {
-  //       // 横隣接
-  //       if (ty[i] == ty[j]) {
-  //         grid[TATE][ty[i]][tx[i]] = LINE;
-  //         grid[TATE][ty[i]][tx[i]+1] = LINE;
-  //         grid[TATE][ty[j]][tx[j]] = LINE;
-  //         grid[TATE][ty[j]][tx[j]+1] = LINE;
-  //       }
+  // 隣接する 3
+  foreach (i; 0..tx.length) {
+    foreach (j; 0..tx.length) {
+      if (i == j) { continue; }
+      if (distance(ty[i], tx[i], ty[j], tx[j]) == 1) {
+        // 横隣接
+        if (ty[i] == ty[j]) {
+          grid.set(TATE, ty[i], tx[i], LINE);
+          grid.set(TATE, ty[i], tx[i]+1, LINE);
+          grid.set(TATE, ty[j], tx[j], LINE);
+          grid.set(TATE, ty[j], tx[j]+1, LINE);
+        }
 
-  //       // 縦隣接
-  //       else if (tx[i] == tx[j]) {
-  //         grid[YOKO][ty[i]][tx[i]] = LINE;
-  //         grid[YOKO][ty[i] + 1][tx[i]] = LINE;
-  //         grid[YOKO][ty[j]][tx[j]] = LINE;
-  //         grid[YOKO][ty[j] + 1][tx[j]] = LINE;
-  //       }
-  //     }
-  //   }
-  // }
+        // 縦隣接
+        else if (tx[i] == tx[j]) {
+          grid.set(YOKO, ty[i], tx[i], LINE);
+          grid.set(YOKO, ty[i] + 1, tx[i], LINE);
+          grid.set(YOKO, ty[j], tx[j], LINE);
+          grid.set(YOKO, ty[j] + 1, tx[j], LINE);
+        }
+      }
+    }
+  }
 }
 
 
